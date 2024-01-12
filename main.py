@@ -11,7 +11,6 @@ voice_input_script = """
 <script>
 function startDictation() {
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
-
         var recognition = new webkitSpeechRecognition();
 
         recognition.continuous = false;
@@ -20,11 +19,18 @@ function startDictation() {
         recognition.start();
 
         recognition.onresult = function(e) {
-            document.getElementById('transcript').innerText = e.results[0][0].transcript;
+            var transcript = e.results[0][0].transcript.toLowerCase();
+            document.getElementById('transcript').innerText = transcript;
+            if (transcript.startsWith("email")) {
+                document.getElementById('voiceInputEmail').value = transcript.replace("email", "").trim();
+                let eventEmail = new Event('input', { bubbles: true });
+                document.getElementById('voiceInputEmail').dispatchEvent(eventEmail);
+            } else if (transcript.startsWith("name")) {
+                document.getElementById('voiceInputName').value = transcript.replace("name", "").trim();
+                let eventName = new Event('input', { bubbles: true });
+                document.getElementById('voiceInputName').dispatchEvent(eventName);
+            }
             recognition.stop();
-            document.getElementById('voiceInput').value = e.results[0][0].transcript;
-            let event = new Event('input', { bubbles: true });
-            document.getElementById('voiceInput').dispatchEvent(event);
         };
 
         recognition.onerror = function(e) {
@@ -41,14 +47,18 @@ def main():
     # Custom HTML for voice input
     html(voice_input_script)
 
-    # Hidden text area to capture voice input
-    voice_input = st.text_area("Voice Input", "", key="voice_input", height=0)
+    # Hidden text areas to capture voice input for each field
+    voice_input_email = st.text_area("Voice Email", "", key="voiceInputEmail", height=0)
+    voice_input_name = st.text_area("Voice Name", "", key="voiceInputName", height=0)
 
-    # Display the captured text
-    if voice_input:
-        st.write("You said: ", voice_input)
+    # Streamlit form fields
+    name = st.text_input("Name", key="name", value=voice_input_name)
+    email = st.text_input("Email", key="email", value=voice_input_email)
 
-    # More Streamlit app code can go here...
+    submit_button = st.button("Submit")
+
+    if submit_button:
+        st.success(f"Form submitted with Name: {name} and Email: {email}")
 
 if __name__ == "__main__":
     main()
