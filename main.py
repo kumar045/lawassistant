@@ -24,9 +24,9 @@ function startDictation() {
             document.getElementById('transcript').innerText = transcript;
 
             if (command === "email") {
-                window.parent.postMessage({type: 'streamlit:update', field: 'email', value: value}, '*');
+                window.parent.postMessage({type: 'email', value: value}, '*');
             } else if (command === "name") {
-                window.parent.postMessage({type: 'streamlit:update', field: 'name', value: value}, '*');
+                window.parent.postMessage({type: 'name', value: value}, '*');
             }
 
             recognition.stop();
@@ -45,26 +45,33 @@ def main():
     html(voice_input_script)
 
     # Input fields for name and email
-    name = st.text_input("Name", key="name")
-    email = st.text_input("Email", key="email")
+    name = st.empty()
+    email = st.empty()
 
     # Button to submit the form
     submit_button = st.button("Submit")
 
+    # Use the session state to store the values of name and email
+    if 'name' not in st.session_state:
+        st.session_state.name = ""
+    if 'email' not in st.session_state:
+        st.session_state.email = ""
+
+    name.text_input("Name", value=st.session_state.name, key="name")
+    email.text_input("Email", value=st.session_state.email, key="email")
+
     # Success message upon form submission
     if submit_button:
-        st.success(f"Form submitted with Name: {name} and Email: {email}")
+        st.success(f"Form submitted with Name: {st.session_state.name} and Email: {st.session_state.email}")
 
-    # Listen for messages from the JavaScript and update the input fields
+    # Listen for messages from the JavaScript and update the session state
     st.components.v1.html("""
         <script>
         window.addEventListener("message", (event) => {
-            if (event.data.type === 'streamlit:update') {
-                if (event.data.field === 'email') {
-                    Streamlit.setComponentValue('email', event.data.value);
-                } else if (event.data.field === 'name') {
-                    Streamlit.setComponentValue('name', event.data.value);
-                }
+            if (event.data.type === 'email') {
+                Streamlit.setSessionState({email: event.data.value});
+            } else if (event.data.type === 'name') {
+                Streamlit.setSessionState({name: event.data.value});
             }
         }, false);
         </script>
