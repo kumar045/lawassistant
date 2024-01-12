@@ -1,72 +1,72 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
-import speech_recognition as sr
-import queue  # Import the queue module
+from streamlit.components.v1 import html
 
-# This is needed if you're running the app in a network environment
-RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+# JavaScript with corrected element IDs and visual feedback
+voice_input_script = """
+<button onclick="startDictation()">Start Dictation</button>
+<p id="transcript">Transcript will appear here...</p>
+<div id="loading" style="display: none;">Loading...</div>
+
+<script>
+function startDictation() {
+  document.getElementById('loading').style.display = 'block';
+
+  if (window.hasOwnProperty('webkitSpeechRecognition')) {
+    var recognition = new webkitSpeechRecognition();
+
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    setTimeout(() => recognition.start(), 500); // Brief delay for microphone activation
+
+    recognition.onresult = function(event) {
+      var transcript = event.results[0][0].transcript.trim();
+      document.getElementById('transcript').innerText = transcript;
+      recognition.stop();
+      document.getElementById('loading').style.display = 'none';
+
+      let inputEvent = new Event('input', { bubbles: true });
+
+      // Correctly target Streamlit input elements using data-testid
+      let nameInput = document.querySelector('input[data-testid="name"]');
+      let emailInput = document.querySelector('input[data-testid="email"]');
+
+      if (transcript.startsWith("name")) {
+        let nameValue = transcript.replace("name", "").trim();
+        nameInput.value = nameValue;
+        nameInput.dispatchEvent(inputEvent);
+      } else if (transcript.startsWith("email")) {
+        let emailValue = transcript.replace("email", "").trim();
+        emailInput.value = emailValue;
+        emailInput.dispatchEvent(inputEvent);
+      }
+    };
+
+    recognition.onerror = function(event) {
+      recognition.stop();
+      document.getElementById('loading').style.display = 'none';
+      // Handle errors gracefully, e.g., display an error message
+    };
+  } else {
+    // Handle browser compatibility issues, e.g., display a message
+  }
+}
+</script>
+"""
 
 def main():
-    st.header("Real-time speech recognition with Streamlit")
+  st.title("Voice Recognition Form")
+  html(voice_input_script)
 
-    # Set a larger buffer size if needed
-    webrtc_ctx = webrtc_streamer(
-        key="speech-to-text",
-        mode=WebRtcMode.SENDONLY,
-        rtc_configuration=RTC_CONFIGURATION,
-        audio_receiver_size=1024,  # Increase the receiver size if necessary
-        async_processing=True,
-    )
+  name = st.text_input("Name", key="name", data_testid="name")
+  email = st.text_input("Email", key="email", data_testid="email")
 
-    if webrtc_ctx.state.playing:
-        st.markdown("Speak something...")
-        labels_placeholder = st.empty()
+  submit_button = st.button("Submit")
 
-        audio_processor = AudioProcessor(webrtc_ctx.audio_receiver)
-        audio_processor.start()
-
-        while True:
-            if audio_processor.has_new_text():
-                text = audio_processor.get_text()
-                labels_placeholder.markdown(f"Recognized Text: {text}")
-
-class AudioProcessor:
-    def __init__(self, audio_receiver):
-        self.audio_receiver = audio_receiver
-        self.recognizer = sr.Recognizer()
-        self.text = ""
-        self.new_text_available = False
-
-    def start(self):
-        while True:
-            try:
-                audio_chunk = self.audio_receiver.get_frame(timeout=1)
-                self.process_audio_chunk(audio_chunk)
-            except queue.Empty:
-                continue
-
-    def process_audio_chunk(self, audio_chunk):
-        audio_data = sr.AudioData(
-            audio_chunk.to_bytes(),
-            audio_chunk.sample_rate,
-            audio_chunk.sample_width
-        )
-        try:
-            text = self.recognizer.recognize_google(audio_data, language="en-US")
-            self.text = text
-            self.new_text_available = True
-        except sr.UnknownValueError:
-            pass  # Handle the exception if the speech is unintelligible
-        except sr.RequestError as e:
-            pass  # Handle the exception if the API is unreachable
-
-    def has_new_text(self):
-        return self.new_text_available
-
-    def get_text(self):
-        self.new_text_available = False
-        return self.text
+  if submit_button:
+    st.success(f"Form submitted with Name: {name} and Email: {email}")
 
 if __name__ == "__main__":
-    main()
+  main()
     
