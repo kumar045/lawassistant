@@ -24,7 +24,7 @@ function startVoiceRecognition() {
         };
 
         annyang.addCommands(commands);
-        annyang.start({ autoRestart: true, continuous: false });
+        annyang.start()
     } else {
         console.log("Annyang not supported");
     }
