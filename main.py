@@ -52,18 +52,18 @@ def main():
         st.session_state.name = ""
 
     # Display input fields
-    name = st.text_input("Name", value=st.session_state.name)
-    email = st.text_input("Email", value=st.session_state.email)
+    name = st.text_input("Name", value=st.session_state.name, key="name")
+    email = st.text_input("Email", value=st.session_state.email, key="email")
 
     # Listen for postMessage events from JavaScript
     st.components.v1.html("""
         <script>
         window.addEventListener("message", (event) => {
             if (event.data.type === 'email') {
-                Streamlit.setComponentValue('email_input', event.data.value);
+                Streamlit.setComponentValue('email', event.data.value);
             }
             if (event.data.type === 'name') {
-                Streamlit.setComponentValue('name_input', event.data.value);
+                Streamlit.setComponentValue('name', event.data.value);
             }
         }, false);
         </script>
@@ -74,18 +74,7 @@ def main():
 
     # Success message upon form submission
     if submit_button:
-        st.success(f"Form submitted with Name: {st.session_state.name} and Email: {st.session_state.email}")
-
-    # Callbacks to update session_state when new values are set
-    def on_email_change():
-        st.session_state.email = st.session_state.email_input
-
-    def on_name_change():
-        st.session_state.name = st.session_state.name_input
-
-    # Hidden fields to trigger callbacks
-    st.text_input("", value="", key="email_input", on_change=on_email_change, args=(), type="default", hidden=True)
-    st.text_input("", value="", key="name_input", on_change=on_name_change, args=(), type="default", hidden=True)
+        st.success(f"Form submitted with Name: {name} and Email: {email}")
 
 if __name__ == "__main__":
     main()
