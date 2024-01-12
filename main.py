@@ -1,19 +1,22 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# JavaScript and HTML for Annyang
 voice_input_script = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
 <script>
 function startVoiceRecognition() {
     if (annyang) {
+        console.log("Annyang started");
+        
         var commands = {
             'name *tag': function(tag) {
+                console.log("Name recognized:", tag);
                 document.getElementById("voiceInput").value = "name," + tag;
                 let event = new Event('input', { bubbles: true });
                 document.getElementById("voiceInput").dispatchEvent(event);
             },
             'email *tag': function(tag) {
+                console.log("Email recognized:", tag);
                 document.getElementById("voiceInput").value = "email," + tag.replace(/\s/g, '');
                 let event = new Event('input', { bubbles: true });
                 document.getElementById("voiceInput").dispatchEvent(event);
@@ -21,7 +24,9 @@ function startVoiceRecognition() {
         };
 
         annyang.addCommands(commands);
-        annyang.start();
+        annyang.start({ autoRestart: true, continuous: false });
+    } else {
+        console.log("Annyang not supported");
     }
 }
 </script>
@@ -33,10 +38,8 @@ def main():
     st.title("Voice Input Form")
     html(voice_input_script)
 
-    # Hidden text area to capture voice input
     voice_input = st.text_area("Voice Input", "", key="voice_input", height=0)
 
-    # Parse the voice input and assign to Streamlit fields
     if voice_input:
         input_type, input_value = voice_input.split(",", 1)
         if input_type == "name":
@@ -44,7 +47,6 @@ def main():
         elif input_type == "email":
             st.session_state.email = input_value
 
-    # Streamlit form fields
     name = st.text_input("Name", key="name", value=st.session_state.get("name", ""))
     email = st.text_input("Email", key="email", value=st.session_state.get("email", ""))
     submit_button = st.button("Submit")
@@ -54,4 +56,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
