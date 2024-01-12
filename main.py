@@ -1,62 +1,39 @@
 import streamlit as st
-from streamlit.components.v1 import html
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
+import speech_recognition as sr
 
-# JavaScript for Web Speech API integration
-voice_input_script = """
-<button onclick="startDictation()">Start Dictation</button>
-<p id="transcript">Transcript will appear here...</p>
-
-<script>
-function startDictation() {
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
-        var recognition = new webkitSpeechRecognition();
-
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = "en-US";
-        recognition.start();
-
-        recognition.onresult = function(event) {
-            var transcript = event.results[0][0].transcript.trim();
-            document.getElementById('transcript').innerText = transcript;
-            recognition.stop();
-
-            let inputEvent = new Event('input', { bubbles: true });
-
-            // This will need to be the ID of the Streamlit text input widget
-            let nameInput = document.querySelector('input[data-baseweb="input"]');
-            let emailInput = document.querySelector('input[data-baseweb="input"]');
-
-            if (transcript.startsWith("name")) {
-                let nameValue = transcript.replace("name", "").trim();
-                nameInput.value = nameValue;
-                nameInput.dispatchEvent(inputEvent);
-            } else if (transcript.startsWith("email")) {
-                let emailValue = transcript.replace("email", "").trim();
-                emailInput.value = emailValue;
-                emailInput.dispatchEvent(inputEvent);
-            }
-        };
-
-        recognition.onerror = function(event) {
-            recognition.stop();
-        }
-    }
-}
-</script>
-"""
+# This is needed if you're running the app in a network environment
+RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 
 def main():
-    st.title("Voice Recognition Form")
-    html(voice_input_script)
+    st.header("Real-time speech recognition with Streamlit")
 
-    name = st.text_input("Name", key="name")
-    email = st.text_input("Email", key="email")
+    webrtc_ctx = webrtc_streamer(
+        key="speech-to-text",
+        mode=WebRtcMode.SENDONLY,
+        rtc_configuration=RTC_CONFIGURATION,
+        audio_receiver_size=256,
+        async_processing=True,
+    )
 
-    submit_button = st.button("Submit")
-
-    if submit_button:
-        st.success(f"Form submitted with Name: {name} and Email: {email}")
+    if webrtc_ctx.state.playing:
+        st.markdown("Speak something...")
+        labels_placeholder = st.empty()
+        while True:
+            if webrtc_ctx.audio_receiver:
+                try:
+                    audio_chunk = webrtc_ctx.audio_receiver.get_frame(timeout=1)
+                except queue.Empty:
+                    continue
+                audio_data = pydub.AudioSegment(
+                    data=audio_chunk.to_bytes(), sample_width=audio_chunk.format.bytes, frame_rate=audio_chunk.sample_rate, channels=len(audio_chunk.layout.channels)
+                )
+                r = sr.Recognizer()
+                with sr.AudioData(audio_data.raw_data, audio_data.frame_rate, audio_data.sample_width) as source:
+                    text = r.recognize_google(source, language="en-US")
+                    labels_placeholder.markdown(f"Recognized Text: {text}")
+    else:
+        st.markdown("Please start the audio stream")
 
 if __name__ == "__main__":
     main()
