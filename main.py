@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# JavaScript to integrate voice recognition and send data to Streamlit
+# JavaScript for Web Speech API integration
 voice_input_script = """
 <button onclick="startDictation()">Start Dictation</button>
 <p id="transcript">Transcript will appear here...</p>
@@ -16,20 +16,24 @@ function startDictation() {
         recognition.lang = "en-US";
         recognition.start();
 
-        recognition.onresult = function(e) {
-            var transcript = e.results[0][0].transcript.toLowerCase();
+        recognition.onresult = function(event) {
+            var transcript = event.results[0][0].transcript.trim();
+            var words = transcript.split(' ');
+            var command = words.shift().toLowerCase();
+            var restOfSpeech = words.join(' ');
+
             document.getElementById('transcript').innerText = transcript;
-            if (transcript.startsWith("email")) {
-                var email = transcript.replace("email", "").trim();
-                window.parent.postMessage({type: 'streamlit:setEmailValue', value: email}, '*');
-            } else if (transcript.startsWith("name")) {
-                var name = transcript.replace("name", "").trim();
-                window.parent.postMessage({type: 'streamlit:setNameValue', value: name}, '*');
+
+            if (command === "email") {
+                window.parent.postMessage({type: 'email', value: restOfSpeech}, '*');
+            } else if (command === "name") {
+                window.parent.postMessage({type: 'name', value: restOfSpeech}, '*');
             }
+
             recognition.stop();
         };
 
-        recognition.onerror = function(e) {
+        recognition.onerror = function(event) {
             recognition.stop();
         }
     }
@@ -37,38 +41,29 @@ function startDictation() {
 </script>
 """
 
-# This script hides the elements used for capturing voice input.
-hide_streamlit_style = """
-<style>
-#hiddenEmailField, #hiddenNameField {
-    display: none;
-}
-</style>
-"""
-
 def main():
     st.title("Voice Recognition Form")
     html(voice_input_script)
-    html(hide_streamlit_style)
 
-    # Streamlit input fields
-    name = st.text_input("Name", key="name")
-    email = st.text_input("Email", key="email")
+    # Create session_state keys for name and email
+    if 'email' not in st.session_state:
+        st.session_state.email = ""
+    if 'name' not in st.session_state:
+        st.session_state.name = ""
 
-    # Hidden divs to receive the messages from JavaScript
-    html('<div id="hiddenEmailField"></div>')
-    html('<div id="hiddenNameField"></div>')
+    # Display input fields
+    name = st.text_input("Name", value=st.session_state.name)
+    email = st.text_input("Email", value=st.session_state.email)
 
-    # Listen for messages from the JavaScript
+    # Listen for postMessage events from JavaScript
     st.components.v1.html("""
         <script>
         window.addEventListener("message", (event) => {
-            const data = event.data;
-            if (data.type === 'streamlit:setEmailValue') {
-                Streamlit.setComponentValue('email', data.value);
+            if (event.data.type === 'email') {
+                Streamlit.setComponentValue('email_input', event.data.value);
             }
-            if (data.type === 'streamlit:setNameValue') {
-                Streamlit.setComponentValue('name', data.value);
+            if (event.data.type === 'name') {
+                Streamlit.setComponentValue('name_input', event.data.value);
             }
         }, false);
         </script>
@@ -77,9 +72,20 @@ def main():
     # Button to submit the form
     submit_button = st.button("Submit")
 
-    # Success message upon submission
+    # Success message upon form submission
     if submit_button:
-        st.success(f"Form submitted with Name: {name} and Email: {email}")
+        st.success(f"Form submitted with Name: {st.session_state.name} and Email: {st.session_state.email}")
+
+    # Callbacks to update session_state when new values are set
+    def on_email_change():
+        st.session_state.email = st.session_state.email_input
+
+    def on_name_change():
+        st.session_state.name = st.session_state.name_input
+
+    # Hidden fields to trigger callbacks
+    st.text_input("", value="", key="email_input", on_change=on_email_change, args=(), type="default", hidden=True)
+    st.text_input("", value="", key="name_input", on_change=on_name_change, args=(), type="default", hidden=True)
 
 if __name__ == "__main__":
     main()
