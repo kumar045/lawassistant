@@ -18,16 +18,15 @@ function startDictation() {
 
         recognition.onresult = function(event) {
             var transcript = event.results[0][0].transcript.trim();
-            var words = transcript.split(' ');
-            var command = words.shift().toLowerCase();
-            var restOfSpeech = words.join(' ');
+            var command = transcript.split(' ')[0].toLowerCase();
+            var value = transcript.substring(command.length).trim();
 
             document.getElementById('transcript').innerText = transcript;
 
             if (command === "email") {
-                window.parent.postMessage({type: 'email', value: restOfSpeech}, '*');
+                window.parent.postMessage({type: 'streamlit:update', field: 'email', value: value}, '*');
             } else if (command === "name") {
-                window.parent.postMessage({type: 'name', value: restOfSpeech}, '*');
+                window.parent.postMessage({type: 'streamlit:update', field: 'name', value: value}, '*');
             }
 
             recognition.stop();
@@ -45,29 +44,9 @@ def main():
     st.title("Voice Recognition Form")
     html(voice_input_script)
 
-    # Create session_state keys for name and email
-    if 'email' not in st.session_state:
-        st.session_state.email = ""
-    if 'name' not in st.session_state:
-        st.session_state.name = ""
-
-    # Display input fields
-    name = st.text_input("Name", value=st.session_state.name, key="name")
-    email = st.text_input("Email", value=st.session_state.email, key="email")
-
-    # Listen for postMessage events from JavaScript
-    st.components.v1.html("""
-        <script>
-        window.addEventListener("message", (event) => {
-            if (event.data.type === 'email') {
-                Streamlit.setComponentValue('email', event.data.value);
-            }
-            if (event.data.type === 'name') {
-                Streamlit.setComponentValue('name', event.data.value);
-            }
-        }, false);
-        </script>
-    """, height=0)
+    # Input fields for name and email
+    name = st.text_input("Name", key="name")
+    email = st.text_input("Email", key="email")
 
     # Button to submit the form
     submit_button = st.button("Submit")
@@ -75,6 +54,21 @@ def main():
     # Success message upon form submission
     if submit_button:
         st.success(f"Form submitted with Name: {name} and Email: {email}")
+
+    # Listen for messages from the JavaScript and update the input fields
+    st.components.v1.html("""
+        <script>
+        window.addEventListener("message", (event) => {
+            if (event.data.type === 'streamlit:update') {
+                if (event.data.field === 'email') {
+                    Streamlit.setComponentValue('email', event.data.value);
+                } else if (event.data.field === 'name') {
+                    Streamlit.setComponentValue('name', event.data.value);
+                }
+            }
+        }, false);
+        </script>
+    """, height=0)
 
 if __name__ == "__main__":
     main()
