@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# JavaScript with meticulous transcript parsing, informative feedback, and robust error handling
 voice_input_script = """
 <button onclick="startDictation()">Start Dictation</button>
 <p id="transcript">Transcript will appear here...</p>
@@ -33,7 +32,6 @@ function startDictation() {
 
       let inputEvent = new Event('input', { bubbles: true });
 
-      // Check for "email" and "name" individually
       const words = transcript.split(" ");
       let emailFound = false;
       let nameFound = false;
@@ -45,26 +43,26 @@ function startDictation() {
           emailFound = true;
           if (i + 1 < words.length) {
             emailValue = words.slice(i + 1).join(" ");
-            break;  // Stop processing after email is found
+            break;
           }
         } else if (!nameFound && words[i].toLowerCase() === "name") {
           nameFound = true;
           if (i + 1 < words.length) {
             nameValue = words.slice(i + 1).join(" ");
-            break;  // Stop processing after name is found
+            break;
           }
         }
       }
 
       if (emailValue) {
-        let emailInput = document.querySelector(`input[id="<span class="math-inline">\{st\.session\_state\.email\}"\]\`\);
-emailInput\.value \= emailValue;
-emailInput\.dispatchEvent\(inputEvent\);
-document\.getElementById\('email\-feedback'\)\.style\.display \= 'block';
-document\.getElementById\('email\-feedback'\)\.innerText \= "Email field updated\.";
-\}
-if \(nameValue\) \{
-let nameInput \= document\.querySelector\(\`input\[id\="</span>{st.session_state.name}"]`);
+        let emailInput = document.querySelector(`input[id="${st.session_state.email}"]`);
+        emailInput.value = emailValue;
+        emailInput.dispatchEvent(inputEvent);
+        document.getElementById('email-feedback').style.display = 'block';
+        document.getElementById('email-feedback').innerText = "Email field updated.";
+      }
+      if (nameValue) {
+        let nameInput = document.querySelector(`input[id="${st.session_state.name}"]`);
         nameInput.value = nameValue;
         nameInput.dispatchEvent(inputEvent);
         document.getElementById('name-feedback').style.display = 'block';
@@ -75,25 +73,21 @@ let nameInput \= document\.querySelector\(\`input\[id\="</span>{st.session_state
     recognition.onerror = function(event) {
       recognition.stop();
       document.getElementById('loading').style.display = 'none';
-      // Handle errors gracefully, e.g., display an error message
     };
   } else {
-    // Handle browser compatibility issues, e.g., display a message
+    // Handle browser compatibility issues
   }
 }
 </script>
 """
 
-# Streamlit code, embracing best practices
 def main():
   st.title("Voice-Enabled Form with Refined Features")
-
-  # Display voice input button and transcript area
   html(voice_input_script)
 
-  # Employ session state for dynamic input IDs
   name_input = st.text_input("Name", key="name")
   email_input = st.text_input("Email", key="email")
 
-  # Submit button for form completion
+if __name__ == "__main__":
+  main()
   
