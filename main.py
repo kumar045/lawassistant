@@ -88,6 +88,10 @@ def main():
   name_input = st.text_input("Name", key="name")
   email_input = st.text_input("Email", key="email")
 
+  # Debugging example
+  st.write(f"Name: {st.session_state.name}")
+  st.write(f"Email: {st.session_state.email}")
+
 if __name__ == "__main__":
   main()
   
