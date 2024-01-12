@@ -1,16 +1,20 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# JavaScript with improved transcript parsing, visual feedback, and error handling
+# JavaScript with meticulous transcript parsing, informative feedback, and robust error handling
 voice_input_script = """
 <button onclick="startDictation()">Start Dictation</button>
 <p id="transcript">Transcript will appear here...</p>
 <div id="loading" style="display: none;">Loading...</div>
-<div id="email-feedback" style="display: none;"></div>  <script>
+<div id="email-feedback" style="display: none;"></div>
+<div id="name-feedback" style="display: none;"></div>
+
+<script>
 function startDictation() {
-  document.getElementById('transcript').innerText = "";  // Clear transcript before starting
+  document.getElementById('transcript').innerText = "";
   document.getElementById('loading').style.display = 'block';
   document.getElementById('email-feedback').style.display = 'none';
+  document.getElementById('name-feedback').style.display = 'none';
 
   if (window.hasOwnProperty('webkitSpeechRecognition')) {
     var recognition = new webkitSpeechRecognition();
@@ -19,7 +23,7 @@ function startDictation() {
     recognition.interimResults = false;
     recognition.lang = "en-US";
 
-    setTimeout(() => recognition.start(), 500); // Brief delay for microphone activation
+    setTimeout(() => recognition.start(), 500);
 
     recognition.onresult = function(event) {
       var transcript = event.results[0][0].transcript.trim();
@@ -29,17 +33,42 @@ function startDictation() {
 
       let inputEvent = new Event('input', { bubbles: true });
 
-      // Stricter pattern matching for "email"
-      const emailMatch = transcript.match(/^email\s+(.+)/i);
-      if (emailMatch) {
-        let emailValue = emailMatch[1].trim();
-        let emailInput = document.querySelector(`input[id="${st.session_state.email}"]`);
-        emailInput.value = emailValue;
-        emailInput.dispatchEvent(inputEvent);
-        document.getElementById('email-feedback').style.display = 'block';  // Show feedback
-        document.getElementById('email-feedback').innerText = "Email field updated with spoken address.";
-      } else {
-        // Handle other cases or errors
+      // Check for "email" and "name" individually
+      const words = transcript.split(" ");
+      let emailFound = false;
+      let nameFound = false;
+      let emailValue = "";
+      let nameValue = "";
+
+      for (let i = 0; i < words.length; i++) {
+        if (!emailFound && words[i].toLowerCase() === "email") {
+          emailFound = true;
+          if (i + 1 < words.length) {
+            emailValue = words.slice(i + 1).join(" ");
+            break;  // Stop processing after email is found
+          }
+        } else if (!nameFound && words[i].toLowerCase() === "name") {
+          nameFound = true;
+          if (i + 1 < words.length) {
+            nameValue = words.slice(i + 1).join(" ");
+            break;  // Stop processing after name is found
+          }
+        }
+      }
+
+      if (emailValue) {
+        let emailInput = document.querySelector(`input[id="<span class="math-inline">\{st\.session\_state\.email\}"\]\`\);
+emailInput\.value \= emailValue;
+emailInput\.dispatchEvent\(inputEvent\);
+document\.getElementById\('email\-feedback'\)\.style\.display \= 'block';
+document\.getElementById\('email\-feedback'\)\.innerText \= "Email field updated\.";
+\}
+if \(nameValue\) \{
+let nameInput \= document\.querySelector\(\`input\[id\="</span>{st.session_state.name}"]`);
+        nameInput.value = nameValue;
+        nameInput.dispatchEvent(inputEvent);
+        document.getElementById('name-feedback').style.display = 'block';
+        document.getElementById('name-feedback').innerText = "Name field updated.";
       }
     };
 
@@ -55,18 +84,16 @@ function startDictation() {
 </script>
 """
 
+# Streamlit code, embracing best practices
 def main():
-  st.title("Voice Recognition Form")
+  st.title("Voice-Enabled Form with Refined Features")
+
+  # Display voice input button and transcript area
   html(voice_input_script)
 
-  name = st.text_input("Name", key="name")
-  email = st.text_input("Email", key="email")
+  # Employ session state for dynamic input IDs
+  name_input = st.text_input("Name", key="name")
+  email_input = st.text_input("Email", key="email")
 
-  submit_button = st.button("Submit")
-
-  if submit_button:
-    st.success(f"Form submitted with Name: {name} and Email: {email}")
-
-if __name__ == "__main__":
-  main()
+  # Submit button for form completion
   
