@@ -1,15 +1,16 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# JavaScript with corrected element targeting (using generated IDs)
+# JavaScript with improved transcript parsing, visual feedback, and error handling
 voice_input_script = """
 <button onclick="startDictation()">Start Dictation</button>
 <p id="transcript">Transcript will appear here...</p>
 <div id="loading" style="display: none;">Loading...</div>
-
-<script>
+<div id="email-feedback" style="display: none;"></div>  <script>
 function startDictation() {
+  document.getElementById('transcript').innerText = "";  // Clear transcript before starting
   document.getElementById('loading').style.display = 'block';
+  document.getElementById('email-feedback').style.display = 'none';
 
   if (window.hasOwnProperty('webkitSpeechRecognition')) {
     var recognition = new webkitSpeechRecognition();
@@ -28,18 +29,17 @@ function startDictation() {
 
       let inputEvent = new Event('input', { bubbles: true });
 
-      // Access generated input IDs from session state
-      let nameInput = document.querySelector(`input[id="${st.session_state.name}"]`);
-      let emailInput = document.querySelector(`input[id="${st.session_state.email}"]`);
-
-      if (transcript.startsWith("name")) {
-        let nameValue = transcript.replace("name", "").trim();
-        nameInput.value = nameValue;
-        nameInput.dispatchEvent(inputEvent);
-      } else if (transcript.startsWith("email")) {
-        let emailValue = transcript.replace("email", "").trim();
+      // Stricter pattern matching for "email"
+      const emailMatch = transcript.match(/^email\s+(.+)/i);
+      if (emailMatch) {
+        let emailValue = emailMatch[1].trim();
+        let emailInput = document.querySelector(`input[id="${st.session_state.email}"]`);
         emailInput.value = emailValue;
         emailInput.dispatchEvent(inputEvent);
+        document.getElementById('email-feedback').style.display = 'block';  // Show feedback
+        document.getElementById('email-feedback').innerText = "Email field updated with spoken address.";
+      } else {
+        // Handle other cases or errors
       }
     };
 
