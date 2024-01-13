@@ -51,25 +51,36 @@ html_content = """
             cursor: pointer;
             margin-top: 20px;
         }
+
+        .submission-message {
+            margin-top: 20px;
+            color: green;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <div class="form-container">
         <h2>Speech to Text Form</h2>
-        <div class="form-field">
-            <label for="nameInput">Name:</label>
-            <input type="text" id="nameInput" placeholder="Speak your name">
-        </div>
-        <div class="form-field">
-            <label for="emailInput">Email:</label>
-            <input type="text" id="emailInput" placeholder="Speak your email">
-        </div>
-        <input type="submit" value="Submit">
+        <form id="speechForm">
+            <div class="form-field">
+                <label for="nameInput">Name:</label>
+                <input type="text" id="nameInput" placeholder="Speak your name">
+            </div>
+            <div class="form-field">
+                <label for="emailInput">Email:</label>
+                <input type="text" id="emailInput" placeholder="Speak your email">
+            </div>
+            <input type="submit" value="Submit">
+        </form>
+        <div class="submission-message" id="submissionMessage"></div>
     </div>
 
     <script>
+        const form = document.getElementById('speechForm');
         const nameInput = document.getElementById('nameInput');
         const emailInput = document.getElementById('emailInput');
+        const submissionMessage = document.getElementById('submissionMessage');
         const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
         let currentInput;
 
@@ -98,6 +109,11 @@ html_content = """
         recognition.onerror = event => {
             console.error('Speech recognition error:', event.error);
         };
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submissionMessage.textContent = 'Form submitted successfully!';
+        });
     </script>
 </body>
 </html>
