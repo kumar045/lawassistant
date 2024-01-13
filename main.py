@@ -1,85 +1,81 @@
 import streamlit as st
 from streamlit.components.v1 import html
 
-# Define the entire HTML content
+# Combining your HTML, CSS, and JavaScript into a single HTML content
 html_content = """
 <!DOCTYPE html>
 <html>
 <head>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #container {
-            padding: 20px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        p, .feedback {
-            margin: 10px 0;
-        }
+        * { box-sizing: border-box; }
+        body { --gap: 1rem; font-family: ui-sans-serif, system-ui, sans-serif; }
+        button { background-color: hsl(90, 50%, 30%); border: 0; color: hsl(90, 50%, 95%); margin-block-start: var(--gap); padding: calc(var(--gap) / 2) var(--gap); }
+        button.listening { background-color: hsl(0, 50%, 50%); color: hsl(0, 50%, 95%); }
+        code { background: #333; color: lime; display: block; padding: calc(var(--gap) / 2); }
+        fieldset { background: #EEE; border: 1px solid #BBB; padding: var(--gap); }
+        form { margin: 0 auto; max-width: 30rem; }
+        input, textarea { border: 1px solid #BBB; display: block; padding: calc(var(--gap) / 2); resize: vertical; width: 100%; }
+        label { display: block; font-weight: 500; margin-block-start: var(--gap); }
+        p { font-size: small; }
     </style>
 </head>
 <body>
-    <div id="container">
-        <button onclick="startDictation()">Start Dictation</button>
-        <p id="transcript">Transcript will appear here...</p>
-        <div id="loading" style="display: none;">Loading...</div>
-        <div id="email-feedback" class="feedback" style="display: none;"></div>
-        <div id="name-feedback" class="feedback" style="display: none;"></div>
-    </div>
-
+    <form>
+        <fieldset>
+            <legend>Fill Out Form With Speech Recognition (Chrome)</legend>
+            <code id="result">live transcript here ...</code>
+            <button type="button" id="toggle">Toggle listening</button>
+            <p>Click on “Toggle listening”, then click on the form field, where you want to insert speeched text. Pause a bit after a sentence to process the speech-data. This demo only works with language <strong>“en-US”</strong>, only in Chrome, and only if you allow the microphone on this page!</p>
+            <label>Field 1<input /></label>
+            <label>Field 2<input /></label>
+            <label>Field 3<input /></label>
+            <label>Field 4<textarea></textarea></label>
+        </fieldset>
+    </form>
     <script>
-        function startDictation() {
-            document.getElementById('transcript').innerText = "";
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('email-feedback').style.display = 'none';
-            document.getElementById('name-feedback').style.display = 'none';
+        function init() {
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+                let speech = { enabled: true, listening: false, recognition: new window.SpeechRecognition(), text: '' }
+                speech.recognition.continuous = true;
+                speech.recognition.interimResults = true;
+                speech.recognition.lang = 'en-US';
+                speech.recognition.addEventListener('result', (event) => {
+                    const audio = event.results[event.results.length - 1];
+                    speech.text = audio[0].transcript;
+                    const tag = document.activeElement.nodeName;
+                    if (tag === 'INPUT' || tag === 'TEXTAREA') {
+                        if (audio.isFinal) {
+                            document.activeElement.value += speech.text;
+                        }
+                    }
+                    result.innerText = speech.text;
+                });
 
-            if (window.hasOwnProperty('webkitSpeechRecognition')) {
-                var recognition = new webkitSpeechRecognition();
-
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = "en-US";
-
-                setTimeout(() => recognition.start(), 500);
-
-                recognition.onresult = function(event) {
-                    var transcript = event.results[0][0].transcript.trim();
-                    document.getElementById('transcript').innerText = transcript;
-                    recognition.stop();
-                    document.getElementById('loading').style.display = 'none';
-
-                    // Process transcript (example logic here)
-                };
-
-                recognition.onerror = function(event) {
-                    recognition.stop();
-                    document.getElementById('loading').style.display = 'none';
-                };
-            } else {
-                // Handle browser compatibility issues
+                toggle.addEventListener('click', () => {
+                    speech.listening = !speech.listening;
+                    if (speech.listening) {
+                        toggle.classList.add('listening');
+                        toggle.innerText = 'Listening ...';
+                        speech.recognition.start();
+                    } else {
+                        toggle.classList.remove('listening');
+                        toggle.innerText = 'Toggle listening';
+                        speech.recognition.stop();
+                    }
+                });
             }
         }
+        init();
     </script>
 </body>
 </html>
 """
 
 def main():
-    st.title("Custom Form in Streamlit")
+    st.title("Speech Recognition Form")
     html(html_content)
 
 if __name__ == "__main__":
     main()
-  
+    
