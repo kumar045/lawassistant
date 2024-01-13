@@ -4,8 +4,10 @@ from streamlit.components.v1 import html
 # Combining your HTML, CSS, and JavaScript into a single HTML content
 html_content = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { box-sizing: border-box; }
         body { --gap: 1rem; font-family: ui-sans-serif, system-ui, sans-serif; }
@@ -66,7 +68,7 @@ html_content = """
                 });
             }
         }
-        init();
+        window.onload = init;
     </script>
 </body>
 </html>
@@ -74,7 +76,7 @@ html_content = """
 
 def main():
     st.title("Speech Recognition Form")
-    html(html_content)
+    html(html_content, height=800)  # Adjust the height as necessary
 
 if __name__ == "__main__":
     main()
