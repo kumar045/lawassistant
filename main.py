@@ -4,14 +4,15 @@ from streamlit.components.v1 import html
 # Combining your HTML, CSS, and JavaScript into a single HTML content
 html_content = """
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text Form</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -19,87 +20,64 @@ html_content = """
             margin: 0;
         }
 
-        .container {
+        .form-container {
             text-align: center;
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .title {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .recordButton {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        .recordButton:hover {
-            background-color: #0056b3;
-        }
-
-        .outputText {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f5f5f5;
             border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin: 10px 0;
             border-radius: 4px;
-            min-height: 100px;
-            font-size: 18px;
+            border: 1px solid #ddd;
+            width: 80%;
         }
     </style>
-    <title>Speech to Text</title>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">Speech to Text</h1>
-        <button id="startButton" class="recordButton">Start Recording</button>
-        <div id="output" class="outputText"></div>
+    <div class="form-container">
+        <h2>Speech to Text Form</h2>
+        <input type="text" id="nameInput" placeholder="Speak your name">
+        <input type="text" id="emailInput" placeholder="Speak your email">
     </div>
 
     <script>
-        const startButton = document.getElementById('startButton');
-        const outputDiv = document.getElementById('output');
+        const nameInput = document.getElementById('nameInput');
+        const emailInput = document.getElementById('emailInput');
         const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+        let currentInput;
 
-        recognition.interimResults = true;
-        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.continuous = false;
 
-        startButton.addEventListener('click', () => {
+        nameInput.addEventListener('click', () => {
+            currentInput = nameInput;
             recognition.start();
-            startButton.disabled = true;
-            startButton.textContent = 'Recording...';
+        });
+
+        emailInput.addEventListener('click', () => {
+            currentInput = emailInput;
+            recognition.start();
         });
 
         recognition.onresult = event => {
-            const result = event.results[event.results.length - 1][0].transcript;
-            outputDiv.textContent = result;
+            const result = event.results[0][0].transcript;
+            currentInput.value = result;
         };
 
         recognition.onend = () => {
-            startButton.disabled = false;
-            startButton.textContent = 'Start Recording';
+            recognition.stop();
         };
 
         recognition.onerror = event => {
             console.error('Speech recognition error:', event.error);
         };
-
-        recognition.onnomatch = () => {
-            console.log('No speech was recognized.');
-        };
     </script>
 </body>
 </html>
+
 
 
 """
