@@ -4,12 +4,11 @@ from streamlit.components.v1 import html
 # Combining your HTML, CSS, and JavaScript into a single HTML content
 html_content = """
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech to Text Form</title>
+    <title>Speech to Text Form with Country Selection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -37,7 +36,7 @@ html_content = """
             font-weight: bold;
         }
 
-        input[type="text"], input[type="submit"] {
+        input[type="text"], input[type="submit"], select {
             padding: 10px;
             margin-top: 5px;
             border-radius: 4px;
@@ -70,6 +69,13 @@ html_content = """
             <div class="form-field">
                 <label for="emailInput">Email:</label>
                 <input type="text" id="emailInput" placeholder="Speak your email">
+            </div>
+            <div class="form-field">
+                <label for="countrySelect">Country:</label>
+                <select id="countrySelect">
+                    <option value="India">India</option>
+                    <option value="US">US</option>
+                </select>
             </div>
             <input type="submit" value="Submit">
         </form>
@@ -113,10 +119,14 @@ html_content = """
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             submissionMessage.textContent = 'Form submitted successfully!';
+            // You can handle the form data here
+            // For example, send it to a server or log it
+            // console.log(nameInput.value, emailInput.value, document.getElementById('countrySelect').value);
         });
     </script>
 </body>
 </html>
+
 
 
 
