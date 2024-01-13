@@ -9,81 +9,99 @@ html_content = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * { box-sizing: border-box; }
-        body { --gap: 1rem; font-family: ui-sans-serif, system-ui, sans-serif; }
-        button { background-color: hsl(90, 50%, 30%); border: 0; color: hsl(90, 50%, 95%); margin-block-start: var(--gap); padding: calc(var(--gap) / 2) var(--gap); }
-        button.listening { background-color: hsl(0, 50%, 50%); color: hsl(0, 50%, 95%); }
-        code { background: #333; color: lime; display: block; padding: calc(var(--gap) / 2); }
-        fieldset { background: #EEE; border: 1px solid #BBB; padding: var(--gap); }
-        form { margin: 0 auto; max-width: 30rem; }
-        input, textarea { border: 1px solid #BBB; display: block; padding: calc(var(--gap) / 2); resize: vertical; width: 100%; }
-        label { display: block; font-weight: 500; margin-block-start: var(--gap); }
-        p { font-size: small; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .recordButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .recordButton:hover {
+            background-color: #0056b3;
+        }
+
+        .outputText {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            font-size: 18px;
+        }
     </style>
+    <title>Speech to Text</title>
 </head>
 <body>
-    <form>
-        <fieldset>
-            <legend>Fill Out Form With Speech Recognition (Chrome)</legend>
-            <code id="result">live transcript here ...</code>
-            <button type="button" id="toggle">Toggle listening</button>
-            <p>Click on “Toggle listening”, then click on the form field, where you want to insert speeched text. Pause a bit after a sentence to process the speech-data. This demo only works with language <strong>“en-US”</strong>, only in Chrome, and only if you allow the microphone on this page!</p>
-            <label>Field 1<input /></label>
-            <label>Field 2<input /></label>
-            <label>Field 3<input /></label>
-            <label>Field 4<textarea></textarea></label>
-        </fieldset>
-    </form>
+    <div class="container">
+        <h1 class="title">Speech to Text</h1>
+        <button id="startButton" class="recordButton">Start Recording</button>
+        <div id="output" class="outputText"></div>
+    </div>
+
     <script>
-        function init() {
-            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-                let speech = {
-                    recognition: new window.SpeechRecognition(),
-                    text: '',
-                    listening: false
-                }
-                speech.recognition.continuous = true;
-                speech.recognition.interimResults = true;
-                speech.recognition.lang = 'en-US';
-                speech.recognition.addEventListener('result', (event) => {
-                    const lastResult = event.results[event.results.length - 1];
-                    const transcript = lastResult[0].transcript;
-                    if (lastResult.isFinal) {
-                        speech.text = transcript;
-                        const tag = document.activeElement.nodeName;
-                        if (tag === 'INPUT' || tag === 'TEXTAREA') {
-                            document.activeElement.value += speech.text;
-                        }
-                        result.innerText = speech.text;
-                    }
-                });
+        const startButton = document.getElementById('startButton');
+        const outputDiv = document.getElementById('output');
+        const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
 
-                speech.recognition.addEventListener('error', (event) => {
-                    console.error('Speech recognition error', event.error);
-                });
+        recognition.interimResults = true;
+        recognition.continuous = true;
 
-                const toggle = document.getElementById('toggle');
-                toggle.addEventListener('click', () => {
-                    speech.listening = !speech.listening;
-                    if (speech.listening) {
-                        toggle.classList.add('listening');
-                        toggle.innerText = 'Listening ...';
-                        speech.recognition.start();
-                    } else {
-                        toggle.classList.remove('listening');
-                        toggle.innerText = 'Toggle listening';
-                        speech.recognition.stop();
-                    }
-                });
-            } else {
-                console.error('Speech Recognition not supported in this browser.');
-            }
-        }
-        window.onload = init;
+        startButton.addEventListener('click', () => {
+            recognition.start();
+            startButton.disabled = true;
+            startButton.textContent = 'Recording...';
+        });
+
+        recognition.onresult = event => {
+            const result = event.results[event.results.length - 1][0].transcript;
+            outputDiv.textContent = result;
+        };
+
+        recognition.onend = () => {
+            startButton.disabled = false;
+            startButton.textContent = 'Start Recording';
+        };
+
+        recognition.onerror = event => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.onnomatch = () => {
+            console.log('No speech was recognized.');
+        };
     </script>
 </body>
 </html>
+
+
 """
 
 def main():
