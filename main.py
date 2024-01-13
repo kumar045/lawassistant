@@ -39,7 +39,7 @@ html_content = """
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
                 let speech = { enabled: true, listening: false, recognition: new window.SpeechRecognition(), text: '' }
-                speech.recognition.continuous = true;
+                speech.recognition.continuous = false;
                 speech.recognition.interimResults = true;
                 speech.recognition.lang = 'en-US';
                 speech.recognition.addEventListener('result', (event) => {
