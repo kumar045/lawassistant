@@ -27,20 +27,44 @@ html_content = """
             border-radius: 8px;
         }
 
-        input[type="text"] {
+        .form-field {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="submit"] {
             padding: 10px;
-            margin: 10px 0;
+            margin-top: 5px;
             border-radius: 4px;
             border: 1px solid #ddd;
             width: 80%;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="form-container">
         <h2>Speech to Text Form</h2>
-        <input type="text" id="nameInput" placeholder="Speak your name">
-        <input type="text" id="emailInput" placeholder="Speak your email">
+        <div class="form-field">
+            <label for="nameInput">Name:</label>
+            <input type="text" id="nameInput" placeholder="Speak your name">
+        </div>
+        <div class="form-field">
+            <label for="emailInput">Email:</label>
+            <input type="text" id="emailInput" placeholder="Speak your email">
+        </div>
+        <input type="submit" value="Submit">
     </div>
 
     <script>
