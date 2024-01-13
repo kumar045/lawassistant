@@ -38,22 +38,32 @@ html_content = """
         function init() {
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-                let speech = { enabled: true, listening: false, recognition: new window.SpeechRecognition(), text: '' }
-                speech.recognition.continuous = false;
+                let speech = {
+                    recognition: new window.SpeechRecognition(),
+                    text: '',
+                    listening: false
+                }
+                speech.recognition.continuous = true;
                 speech.recognition.interimResults = true;
                 speech.recognition.lang = 'en-US';
                 speech.recognition.addEventListener('result', (event) => {
-                    const audio = event.results[event.results.length - 1];
-                    speech.text = audio[0].transcript;
-                    const tag = document.activeElement.nodeName;
-                    if (tag === 'INPUT' || tag === 'TEXTAREA') {
-                        if (audio.isFinal) {
+                    const lastResult = event.results[event.results.length - 1];
+                    const transcript = lastResult[0].transcript;
+                    if (lastResult.isFinal) {
+                        speech.text = transcript;
+                        const tag = document.activeElement.nodeName;
+                        if (tag === 'INPUT' || tag === 'TEXTAREA') {
                             document.activeElement.value += speech.text;
                         }
+                        result.innerText = speech.text;
                     }
-                    result.innerText = speech.text;
                 });
 
+                speech.recognition.addEventListener('error', (event) => {
+                    console.error('Speech recognition error', event.error);
+                });
+
+                const toggle = document.getElementById('toggle');
                 toggle.addEventListener('click', () => {
                     speech.listening = !speech.listening;
                     if (speech.listening) {
@@ -66,6 +76,8 @@ html_content = """
                         speech.recognition.stop();
                     }
                 });
+            } else {
+                console.error('Speech Recognition not supported in this browser.');
             }
         }
         window.onload = init;
