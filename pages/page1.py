@@ -1,46 +1,25 @@
 import streamlit as st
-from streamlit_mic_recorder import speech_to_text
+from streamlit_mic_recorder import mic_recorder,speech_to_text
 
-st.title("Form")
+state=st.session_state
 
-class SendRequests:
-    def __init__(self):
-        self.email = ""
-        self.subject = ""
-        self.problem_type = None
-        self.info = ""
-        self.report_file = None
+if 'text_received' not in state:
+    state.text_received=[]
 
-    def display_form(self):
-        # Buttons for speech-to-text outside the form
-        if st.button("Speak Email"):
-            self.email = speech_to_text(key="email_stt")
-        if st.button("Speak Subject"):
-            self.subject = speech_to_text(key="subject_stt")
-        if st.button("Speak Description"):
-            self.info = speech_to_text(key="info_stt")
+c1,c2=st.columns(2)
+with c1:
+    st.write("Convert speech to text:")
+with c2:
+    text=speech_to_text(language='en',use_container_width=True,just_once=True,key='STT')
 
-        with st.form(key="request_form"):
-            # Form fields
-            self.email = st.text_input("Your email address", value=self.email, key='email')
-            self.subject = st.text_input("Subject", value=self.subject, key='subject')
-            self.problem_type = st.selectbox(
-                "Type of Problem", 
-                options=("Report Content", "Legal Inquiries", "Report Copyright Infringement"),
-                key='problem_type'
-            )
-            self.info = st.text_area("Description", value=self.info, key='info')
-            self.report_file = st.file_uploader("Attachment (optional)", key='report_file')
-            
-            submit_button = st.form_submit_button("Submit")
+if text:       
+    state.text_received.append(text)
 
-            if submit_button:
-                self.process_request()
+for text in state.text_received:
+    st.text(text)
 
-    @staticmethod
-    def process_request():
-        with st.spinner("Sending..."):
-            st.success("Request submitted!")
+st.write("Record your voice, and play the recorded audio:")
+audio=mic_recorder(start_prompt="⏺️",stop_prompt="⏹️",key='recorder')
 
-requests = SendRequests()
-requests.display_form()
+if audio:       
+    st.audio(audio['bytes'])
