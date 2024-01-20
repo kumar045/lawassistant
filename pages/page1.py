@@ -2,13 +2,7 @@ from time import sleep
 import streamlit as st
 from streamlit_mic_recorder import speech_to_text
 
-from app.config.page_config import pages
-
-# Set page configuration
-st.set_page_config(page_title=pages.app_title, layout="wide", initial_sidebar_state="auto")
-
-# Display page title
-st.title(pages.submit_requests.page_title)
+st.title("Form")
 
 class SendRequests:
     def __init__(self):
