@@ -1,6 +1,5 @@
-from time import sleep
 import streamlit as st
-from streamlit_mic_recorder import speech_to_text
+from streamlit_mic_recorder import stt_button
 
 st.title("Form")
 
@@ -14,16 +13,27 @@ class SendRequests:
 
     def display_form(self):
         with st.form(key="request_form"):
-            self.email = st.text_input("Your email address", value=speech_to_text(key='email_stt'))
-            self.subject = st.text_input("Subject", value=speech_to_text(key='subject_stt'))
+            self.email = st.text_input("Your email address", key='email')
+            self.subject = st.text_input("Subject", key='subject')
             self.problem_type = st.selectbox(
-                "Type of Problem", options=("Report Content", "Legal Inquiries", "Report Copyright Infringement")
+                "Type of Problem", 
+                options=("Report Content", "Legal Inquiries", "Report Copyright Infringement"),
+                key='problem_type'
             )
-            self.info = st.text_area("Description", value=speech_to_text(key='info_stt'))
+            self.info = st.text_area("Description", key='info')
             st.caption(
                 "Please enter the details of your request. A member of our support staff will respond as soon as possible."
             )
-            self.report_file = st.file_uploader("Attachment (optional)")
+            self.report_file = st.file_uploader("Attachment (optional)", key='report_file')
+            
+            # Speech to text buttons
+            if st.button("Transcribe Email"):
+                self.email = stt_button("Speak now", key="stt1")
+            if st.button("Transcribe Subject"):
+                self.subject = stt_button("Speak now", key="stt2")
+            if st.button("Transcribe Description"):
+                self.info = stt_button("Speak now", key="stt3")
+
             submit_button = st.form_submit_button("Submit")
 
             if submit_button:
@@ -32,7 +42,6 @@ class SendRequests:
     @staticmethod
     def process_request():
         with st.spinner("Sending..."):
-            sleep(10)
             st.success("Request submitted!")
 
 requests = SendRequests()
