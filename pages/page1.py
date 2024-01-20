@@ -21,5 +21,3 @@ for text in state.text_received:
 st.write("Record your voice, and play the recorded audio:")
 audio=mic_recorder(start_prompt="⏺️",stop_prompt="⏹️",key='recorder')
 
-if audio:       
-    st.audio(audio['bytes'])
