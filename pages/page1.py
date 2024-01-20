@@ -1,22 +1,43 @@
 import streamlit as st
-from streamlit_mic_recorder import mic_recorder,speech_to_text
+from streamlit_mic_recorder import speech_to_text
 
-state=st.session_state
+st.title("Form with Speech to Text")
 
-if 'text_received' not in state:
-    state.text_received=[]
+class SendRequests:
+    def __init__(self):
+        self.email = ""
+        self.subject = ""
+        self.problem_type = None
+        self.info = ""
+        self.report_file = None
 
-c1,c2=st.columns(2)
-with c1:
-    st.write("Convert speech to text:")
-with c2:
-    text=speech_to_text(language='en',use_container_width=True,just_once=True,key='STT')
+    def display_form(self):
+        # Speech to text for each field
+        email_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='email_stt')
+        subject_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='subject_stt')
+        info_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='info_stt')
 
-if text:       
-    state.text_received.append(text)
+        with st.form(key="request_form"):
+            # Form fields with pre-filled speech-to-text data
+            self.email = st.text_input("Your email address", value=email_text if email_text else self.email)
+            self.subject = st.text_input("Subject", value=subject_text if subject_text else self.subject)
+            self.problem_type = st.selectbox(
+                "Type of Problem", 
+                options=("Report Content", "Legal Inquiries", "Report Copyright Infringement"),
+                key='problem_type'
+            )
+            self.info = st.text_area("Description", value=info_text if info_text else self.info)
+            self.report_file = st.file_uploader("Attachment (optional)", key='report_file')
+            
+            submit_button = st.form_submit_button("Submit")
 
-for text in state.text_received:
-    st.text(text)
+            if submit_button:
+                self.process_request()
 
-st.write("Record your voice, and play the recorded audio:")
+    @staticmethod
+    def process_request():
+        with st.spinner("Sending..."):
+            st.success("Request submitted!")
 
+requests = SendRequests()
+requests.display_form()
