@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit.components.v1 import html
 
 def main():
     st.title("Speech Recognition Form")
@@ -40,13 +41,14 @@ def main():
                 recognition.onresult = event => {
                     const result = event.results[0][0].transcript;
                     inputElement.value = result;
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 };
             }
         </script>
     </body>
     </html>
     """
-    st.markdown(html_content, unsafe_allow_html=True)
+    html(html_content, height=300)
 
     # Streamlit form for user input
     with st.form(key="request_form"):
@@ -73,4 +75,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
+    
