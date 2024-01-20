@@ -10,12 +10,17 @@ class SendRequests:
         self.problem_type = None
         self.info = ""
         self.report_file = None
+        self.language = "en"
 
     def display_form(self):
+        # Dropdown for language selection
+        self.language = st.selectbox("Select Language", options=("English", "Hindi"), key='language_select')
+        language_code = 'hi' if self.language == "Hindi" else 'en'
+
         # Speech to text for each field
-        email_text = speech_to_text(language='hi',start_prompt='Email 🎙️',use_container_width=True, just_once=True, key='email_stt')
-        subject_text = speech_to_text(start_prompt=' Subject 🎙️', use_container_width=True, just_once=True, key='subject_stt')
-        info_text = speech_to_text(start_prompt='Info 🎙️',use_container_width=True, just_once=True, key='info_stt')
+        email_text = speech_to_text(language=language_code, start_prompt='Email 🎙️', use_container_width=True, just_once=True, key='email_stt')
+        subject_text = speech_to_text(language=language_code, start_prompt='Subject 🎙️', use_container_width=True, just_once=True, key='subject_stt')
+        info_text = speech_to_text(language=language_code, start_prompt='Info 🎙️', use_container_width=True, just_once=True, key='info_stt')
 
         with st.form(key="request_form"):
             # Form fields with pre-filled speech-to-text data
