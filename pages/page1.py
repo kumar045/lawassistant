@@ -13,16 +13,12 @@ class SendRequests:
 
     def display_form(self):
         with st.form(key="request_form"):
-            # Speech to text for each field
-            self.email = st.text_input("Your email address", value=self.email)
+            # Speech to text buttons for each field
             email_stt = speech_to_text(language='en', use_container_width=True, just_once=True, key='email_stt')
-            if email_stt:
-                self.email = email_stt
+            self.email = st.text_input("Your email address", value=email_stt if email_stt else self.email)
 
-            self.subject = st.text_input("Subject", value=self.subject)
             subject_stt = speech_to_text(language='en', use_container_width=True, just_once=True, key='subject_stt')
-            if subject_stt:
-                self.subject = subject_stt
+            self.subject = st.text_input("Subject", value=subject_stt if subject_stt else self.subject)
 
             self.problem_type = st.selectbox(
                 "Type of Problem", 
@@ -30,10 +26,8 @@ class SendRequests:
                 key='problem_type'
             )
 
-            self.info = st.text_area("Description", value=self.info)
             info_stt = speech_to_text(language='en', use_container_width=True, just_once=True, key='info_stt')
-            if info_stt:
-                self.info = info_stt
+            self.info = st.text_area("Description", value=info_stt if info_stt else self.info)
 
             self.report_file = st.file_uploader("Attachment (optional)", key='report_file')
             
