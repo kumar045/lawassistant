@@ -13,16 +13,16 @@ class SendRequests:
 
     def display_form(self):
         with st.form(key="request_form"):
-            # Email field with mic button
-            col1, col2 = st.columns([3, 1])
+            # Email field with mic 'button'
+            col1, col2 = st.columns([4, 1])
             with col1:
                 self.email = st.text_input("Your email address", value=self.email, key='email')
             with col2:
                 if st.button("🎙️", key="email_mic"):
                     self.email = speech_to_text(language='en', use_container_width=True, key='email_stt')
 
-            # Subject field with mic button
-            col1, col2 = st.columns([3, 1])
+            # Subject field with mic 'button'
+            col1, col2 = st.columns([4, 1])
             with col1:
                 self.subject = st.text_input("Subject", value=self.subject, key='subject')
             with col2:
@@ -36,8 +36,8 @@ class SendRequests:
                 key='problem_type'
             )
 
-            # Description field with mic button
-            col1, col2 = st.columns([3, 1])
+            # Description field with mic 'button'
+            col1, col2 = st.columns([4, 1])
             with col1:
                 self.info = st.text_area("Description", value=self.info, key='info')
             with col2:
