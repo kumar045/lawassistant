@@ -13,7 +13,7 @@ class SendRequests:
 
     def display_form(self):
         # Speech to text for each field
-        email_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='email_stt')
+        email_text = speech_to_text(language='en', start_prompt='🎙️',use_container_width=True, just_once=True, key='email_stt')
         subject_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='subject_stt')
         info_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='info_stt')
 
