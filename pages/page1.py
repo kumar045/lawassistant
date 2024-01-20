@@ -12,23 +12,42 @@ class SendRequests:
         self.report_file = None
 
     def display_form(self):
-        # Speech to text for each field
-        email_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='email_stt')
-        subject_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='subject_stt')
-        info_text = speech_to_text(language='en', use_container_width=True, just_once=True, key='info_stt')
-
         with st.form(key="request_form"):
-            # Form fields with pre-filled speech-to-text data
-            self.email = st.text_input("Your email address", value=email_text if email_text else self.email)
-            self.subject = st.text_input("Subject", value=subject_text if subject_text else self.subject)
+            # Email field with mic button
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                self.email = st.text_input("Your email address", value=self.email, key='email')
+            with col2:
+                if st.button("🎙️", key="email_mic"):
+                    self.email = speech_to_text(language='en', use_container_width=True, key='email_stt')
+
+            # Subject field with mic button
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                self.subject = st.text_input("Subject", value=self.subject, key='subject')
+            with col2:
+                if st.button("🎙️", key="subject_mic"):
+                    self.subject = speech_to_text(language='en', use_container_width=True, key='subject_stt')
+
+            # Problem type selection
             self.problem_type = st.selectbox(
                 "Type of Problem", 
                 options=("Report Content", "Legal Inquiries", "Report Copyright Infringement"),
                 key='problem_type'
             )
-            self.info = st.text_area("Description", value=info_text if info_text else self.info)
+
+            # Description field with mic button
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                self.info = st.text_area("Description", value=self.info, key='info')
+            with col2:
+                if st.button("🎙️", key="info_mic"):
+                    self.info = speech_to_text(language='en', use_container_width=True, key='info_stt')
+
+            # File uploader
             self.report_file = st.file_uploader("Attachment (optional)", key='report_file')
             
+            # Submit button
             submit_button = st.form_submit_button("Submit")
 
             if submit_button:
