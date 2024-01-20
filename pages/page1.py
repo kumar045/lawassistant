@@ -1,78 +1,45 @@
+from time import sleep
 import streamlit as st
-from streamlit.components.v1 import html
+from streamlit_mic_recorder import speech_to_text
 
-def main():
-    st.title("Speech Recognition Form")
+from app.config.page_config import pages
 
-    # Embed the HTML for speech recognition
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <style>
-            .form-field {
-                margin: 15px 0;
-            }
+# Set page configuration
+st.set_page_config(page_title=pages.app_title, layout="wide", initial_sidebar_state="auto")
 
-            label {
-                display: block;
-                margin-bottom: 5px;
-                font-weight: bold;
-            }
+# Display page title
+st.title(pages.submit_requests.page_title)
 
-            input[type="text"], select {
-                padding: 10px;
-                margin-top: 5px;
-                border-radius: 4px;
-                border: 1px solid #ddd;
-                width: 80%;
-            }
-        </style>
-    </head>
-    <body>
-        <script>
-            const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
-            recognition.interimResults = false;
-            recognition.continuous = false;
+class SendRequests:
+    def __init__(self):
+        self.email = None
+        self.subject = None
+        self.problem_type = None
+        self.info = None
+        self.report_file = None
 
-            function startRecognition(inputId) {
-                const inputElement = document.getElementById(inputId);
-                recognition.start();
-                recognition.onresult = event => {
-                    const result = event.results[0][0].transcript;
-                    inputElement.value = result;
-                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-                };
-            }
-        </script>
-    </body>
-    </html>
-    """
-    html(html_content, height=300)
+    def display_form(self):
+        with st.form(key="request_form"):
+            self.email = st.text_input("Your email address", value=speech_to_text(key='email_stt'))
+            self.subject = st.text_input("Subject", value=speech_to_text(key='subject_stt'))
+            self.problem_type = st.selectbox(
+                "Type of Problem", options=("Report Content", "Legal Inquiries", "Report Copyright Infringement")
+            )
+            self.info = st.text_area("Description", value=speech_to_text(key='info_stt'))
+            st.caption(
+                "Please enter the details of your request. A member of our support staff will respond as soon as possible."
+            )
+            self.report_file = st.file_uploader("Attachment (optional)")
+            submit_button = st.form_submit_button("Submit")
 
-    # Streamlit form for user input
-    with st.form(key="request_form"):
-        email = st.text_input("Your email address", key="email")
-        subject = st.text_input("Subject", key="subject")
-        problem_type = st.selectbox(
-            "Type of Problem", 
-            options=("Report Content", "Legal Inquiries", "Report Copyright Infringement"),
-            key="problem_type"
-        )
-        info = st.text_area("Description", key="info")
-        report_file = st.file_uploader("Attachment (optional)", key="report_file")
+            if submit_button:
+                self.process_request()
 
-        # Buttons for activating speech recognition
-        st.button("Speak Email", key="speak_email", on_click=lambda: st.markdown(f"<script>startRecognition('email');</script>", unsafe_allow_html=True))
-        st.button("Speak Subject", key="speak_subject", on_click=lambda: st.markdown(f"<script>startRecognition('subject');</script>", unsafe_allow_html=True))
-        st.button("Speak Description", key="speak_info", on_click=lambda: st.markdown(f"<script>startRecognition('info');</script>", unsafe_allow_html=True))
+    @staticmethod
+    def process_request():
+        with st.spinner("Sending..."):
+            sleep(10)
+            st.success("Request submitted!")
 
-        submit_button = st.form_submit_button("Submit")
-
-    # Display success message if submitted
-    if submit_button:
-        st.success("Request submitted!")
-
-if __name__ == "__main__":
-    main()
-    
+requests = SendRequests()
+requests.display_form()
