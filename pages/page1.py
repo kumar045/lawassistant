@@ -14,8 +14,15 @@ class SendRequests:
 
     def display_form(self):
         # Dropdown for language selection
-        self.language = st.selectbox("Select Language", options=("English", "Hindi"), key='language_select')
-        language_code = 'hi' if self.language == "Hindi" else 'en'
+        language_options = {
+            "English": "en",
+            "Hindi": "hi",
+            "Spanish": "es",
+            "Punjabi": "pa",
+            "Chinese": "zh"
+        }
+        selected_language = st.selectbox("Select Language", options=list(language_options.keys()), key='language_select')
+        language_code = language_options[selected_language]
 
         # Speech to text for each field
         email_text = speech_to_text(language=language_code, start_prompt='Email 🎙️', use_container_width=True, just_once=True, key='email_stt')
