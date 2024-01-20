@@ -15,6 +15,7 @@ class SendRequests:
         with st.form(key="request_form"):
             # Speech to text buttons for each field
             email_stt = speech_to_text(language='en', use_container_width=True, just_once=True, key='email_stt')
+            print(email_stt)
             self.email = st.text_input("Your email address", value=email_stt if email_stt else self.email)
 
             subject_stt = speech_to_text(language='en', use_container_width=True, just_once=True, key='subject_stt')
